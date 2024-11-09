@@ -9,4 +9,4 @@ RUN npm install
 
 COPY ../../repositories/tg-bot ./
 
-CMD ["sh", "-c", "cd src && node app.js"]
+CMD ["npm", "run", "dev"]

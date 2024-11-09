@@ -5,21 +5,13 @@ echo "" > ../logs/xray/access.log
 echo "" > ../logs/xray/error.log
 echo "" > ../logs/tg-bot/combined.log
 echo "" > ../logs/tg-bot/error.log
-echo "" > ../logs/tg-bot/transaction.log
 
-# todo вынести в docker file
 # default xray config
 echo '{
   "log": {
-    "loglevel": "debug",
+    "loglevel": "info",
     "access": "/var/log/xray/access.log",
-    "error": "/var/log/xray/error.log",
-    "dnsLog": false
-  },
-  "api": {
-    "tag": "api",
-    "listen": "127.0.0.1:8080",
-    "services": ["HandlerService", "LoggerService", "StatsService", "RoutingService"]
+    "error": "/var/log/xray/error.log"
   },
   "routing": {
     "rules": [],
@@ -77,16 +69,5 @@ echo '{
       "protocol": "blackhole",
       "tag": "block"
     }
-  ],
-  "stats": {},
-  "policy": {
-    "levels": {
-      "0": {
-        "statsInboundUplink": true,
-          "statsInboundDownlink": true,
-          "statsOutboundUplink": true,
-          "statsOutboundDownlink": true
-      }
-    }
-  }
+  ]
 }' > ../config/xray/config.json
