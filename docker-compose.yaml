@@ -1,0 +1,117 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    profiles: ['dev']
+    restart: always
+    volumes:
+      - /var/lib/docker/volumes/postgresql:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    env_file:
+      ./containers/postgres/.env.local
+    expose:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+# todo добавить healthcheck
+    build:
+      context: .
+      dockerfile: containers/api-gateway/Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    profiles: ['dev']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8082:8082"
+    env_file:
+      - ./containers/api-gateway/.env.local
+    # command: npm run dev
+    expose:
+      - "8082"
+    develop:
+      watch:
+        - path: ./repositories/api-gateway/package.json
+          action: rebuild
+        - path: ./repositories/api-gateway/src
+          target: /api-gateway/src
+          action: sync
+
+  xray-vpn:
+    build:
+      context: containers/xray
+      dockerfile: Dockerfile
+    image: xray-vpn:latest
+    container_name: xray-vpn
+    profiles: ['dev', 'xray']
+    env_file:
+      - ./containers/xray/.env.local
+    ports:
+      - "443:443"
+      - "9001:9001"
+      # - "0.0.0.0:8080:8080"
+      # - "80:80"
+    volumes:
+      - ./config/xray/config.json:/usr/local/etc/xray/config.json
+      - ./logs/xray/access.log:/var/log/xray/access.log
+      - ./logs/xray/error.log:/var/log/xray/error.log
+    healthcheck:
+      test: /usr/local/bin/xray api statssys
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    expose:
+      - "8080"
+    deploy:
+      restart_policy:
+        condition: any
+
+#  xray-manager:
+#    build:
+#      context: .
+#      dockerfile: ./containers/xray-manager/Dockerfile
+#    image: xray-manager:latest
+#    container_name: xray-manager
+#    profiles: ['dev', 'xray']
+#    depends_on:
+#      xray-vpn:
+#        condition: service_healthy
+#    env_file:
+#      - ./containers/xray-manager/.env.local
+##    environment:
+##      - LOG_PATH = default
+#    volumes:
+#      - ${LOG_PATH}:/xray-manager/logs/xray-vpn.log
+#    develop:
+#      watch:
+#        - path: ./repositories/xray-manager/package.json
+#          action: rebuild
+#        - path: ./repositories/xray-manager/src
+#          target: /xray-manager/src
+#          action: sync
+
+  tg-bot:
+    build:
+      context: .
+      dockerfile: containers/tg-bot/Dockerfile
+    image: tg-bot:latest
+    container_name: tg-bot
+    profiles: ['dev']
+    ports:
+      - "80:80"
+      # - "443:443"
+    env_file:
+      - ./containers/tg-bot/.env.local
+    volumes:
+      - ./logs/tg-bot/combined.log:/tg-bot/logs/combined.log
+      - ./logs/tg-bot/error.log:/tg-bot/logs/error.log
+#    depends_on:
+      ## api-gateway: todo добавить healthcheck
+      ## todo добавить watch для dev разработки
