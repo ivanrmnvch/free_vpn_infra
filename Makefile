@@ -19,6 +19,7 @@ git-clone-services: ## Клонирование репозиториев
 init-services:
 	cd repositories/api-gateway/src && npm i
 	cd repositories/tg-bot && make init
+	cd repositories/xray-manager && make init
 
 copy-env:
 	cd ./scripts && sh copy-env.sh
@@ -29,20 +30,20 @@ dev:
 down:
 	$(DOCKER_COMPOSE) down
 
-#xray:
-#	$(DOCKER_COMPOSE) --profile xray up
+xray:
+	$(DOCKER_COMPOSE) --profile xray up
 
 
-run-xray-vpn:
-	$(DOCKER_COMPOSE) up -d $(CONTAINER_XRAY_VPN)
-
-get-xray-vpn-log-path:
-	@$(eval LOG_PATH := $(shell docker inspect --format='{{.LogPath}}' $(CONTAINER_XRAY_VPN)))
-
-run-xray-manager: get-xray-vpn-log-path
-	# LOG_PATH=$(LOG_PATH) $(DOCKER_COMPOSE) watch $(CONTAINER_XRAY_MANAGER)
-	LOG_PATH=$(LOG_PATH) $(DOCKER_COMPOSE) up --watch $(CONTAINER_XRAY_MANAGER)
-
-#--build --force-recreate --remove-orphans --scale $(CONTAINER_XRAY_MANAGER)=1
-
-xray: run-xray-vpn run-xray-manager
+#run-xray-vpn:
+#	$(DOCKER_COMPOSE) up -d $(CONTAINER_XRAY_VPN)
+#
+#get-xray-vpn-log-path:
+#	@$(eval LOG_PATH := $(shell docker inspect --format='{{.LogPath}}' $(CONTAINER_XRAY_VPN)))
+#
+#run-xray-manager: get-xray-vpn-log-path
+#	# LOG_PATH=$(LOG_PATH) $(DOCKER_COMPOSE) watch $(CONTAINER_XRAY_MANAGER)
+#	LOG_PATH=$(LOG_PATH) $(DOCKER_COMPOSE) up --watch $(CONTAINER_XRAY_MANAGER)
+#
+##--build --force-recreate --remove-orphans --scale $(CONTAINER_XRAY_MANAGER)=1
+#
+#xray: run-xray-vpn run-xray-manager
