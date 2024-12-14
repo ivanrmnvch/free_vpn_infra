@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      ./containers/postgres/.env
+      services/postgres/.env
 #    expose:
 #      - "5432:5432"
     healthcheck:
